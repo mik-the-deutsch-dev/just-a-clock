@@ -1,0 +1,6 @@
+{
+  "name": "7-Segment Clock",
+  "description": "A responsive 7-segment digital clock with multiple display styles (LED, LCD), OLED burn-in protection, screen awake lock, and vintage background textures.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
