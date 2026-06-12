@@ -130,6 +130,11 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
 
   const digits = getClockDigits();
 
+  // Developer-friendly clock sizing + position controls
+  const CLOCK_DIGIT_SIZE: 'sm' | 'md' | 'lg' | 'xl' = 'sm';
+  const CLOCK_DISPLAY_SCALE = 0.82;
+  const CLOCK_DISPLAY_POSITION = { x: 0, y: 0 };
+
   // Determine dynamic background styling
   const getBackgroundStyles = () => {
     switch (settings.backgroundId) {
@@ -155,10 +160,19 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
     }
   };
 
-  // Screen shift vector mapping for Burn-in Prevention
-  const shiftTransform = settings.burnInProtection
-    ? { transform: `translate(${currentShift.x.toFixed(2)}px, ${currentShift.y.toFixed(2)}px)` }
-    : undefined;
+  // Screen shift vector mapping for Burn-in Prevention + global scale + manual offset
+  const positionOffset = CLOCK_DISPLAY_POSITION;
+  const shiftX = (settings.burnInProtection ? currentShift.x : 0) + positionOffset.x;
+  const shiftY = (settings.burnInProtection ? currentShift.y : 0) + positionOffset.y;
+  const wrapperTransform = `translate(${shiftX.toFixed(2)}px, ${shiftY.toFixed(2)}px) scale(${CLOCK_DISPLAY_SCALE})`;
+
+  const isClassicLcd = activeStyle.id === 'lcd-vintage';
+  const clockDigitWrapperClass = isClassicLcd
+    ? 'from-amber-900 via-amber-800 to-amber-700 text-slate-900'
+    : activeStyle.bgClass;
+  const glassOverlayClass = isClassicLcd
+    ? 'bg-gradient-to-b from-white/20 via-transparent to-black/10 mix-blend-overlay'
+    : activeStyle.glassOverlayClass;
 
   return (
     <div
@@ -208,34 +222,34 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
       {/* Main Responsive Clock Container */}
       <div
         id="clock-display-frame"
-        className="relative w-full max-w-5xl flex flex-col items-center justify-center z-10 transition-transform duration-300"
-        style={shiftTransform}
+        className="relative w-[92%] sm:w-11/12 max-w-5xl flex flex-col items-center justify-center z-10 transition-transform duration-300 mx-auto"
+        style={{ transform: wrapperTransform }}
       >
         {/* Inner shadow/framing wrap */}
         <div
           id="clock-digit-wrapper"
-          className={`flex items-center justify-center gap-1.5 sm:gap-3 p-6 sm:p-10 rounded-3xl transition-all duration-550 border-2 border-zinc-950/20 bg-gradient-to-b ${activeStyle.bgClass}`}
+          className={`w-full flex items-center justify-center gap-1.5 sm:gap-3 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl transition-all duration-550 border-2 border-zinc-950/20 bg-gradient-to-b ${clockDigitWrapperClass}`}
         >
           {/* Digits Block */}
           <div className="relative flex items-center justify-center gap-1 sm:gap-2">
             
             {/* Hour digits */}
-            <SevenSegmentDigit char={digits.h1} style={activeStyle} size="xl" />
-            <SevenSegmentDigit char={digits.h2} style={activeStyle} size="xl" />
+            <SevenSegmentDigit char={digits.h1} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
+            <SevenSegmentDigit char={digits.h2} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
 
             {/* Pulsing separator */}
-            <ColonSeparator style={activeStyle} active={isColonActive} size="xl" />
+            <ColonSeparator style={activeStyle} active={isColonActive} size={CLOCK_DIGIT_SIZE} />
 
             {/* Minute digits */}
-            <SevenSegmentDigit char={digits.m1} style={activeStyle} size="xl" />
-            <SevenSegmentDigit char={digits.m2} style={activeStyle} size="xl" />
+            <SevenSegmentDigit char={digits.m1} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
+            <SevenSegmentDigit char={digits.m2} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
 
             {/* Seconds digits block */}
             {settings.showSeconds && (
               <>
-                <ColonSeparator id="seconds-colon" style={activeStyle} active={isColonActive} size="xl" className="opacity-95" />
-                <SevenSegmentDigit char={digits.s1} style={activeStyle} size="xl" />
-                <SevenSegmentDigit char={digits.s2} style={activeStyle} size="xl" />
+                <ColonSeparator id="seconds-colon" style={activeStyle} active={isColonActive} size={CLOCK_DIGIT_SIZE} className="opacity-95" />
+                <SevenSegmentDigit char={digits.s1} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
+                <SevenSegmentDigit char={digits.s2} style={activeStyle} size={CLOCK_DIGIT_SIZE} />
               </>
             )}
 
@@ -277,7 +291,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
       </div>
 
       {/* Floating Scratched Gloss Layer */}
-      <div className={`absolute inset-0 pointer-events-none ${activeStyle.glassOverlayClass} z-20 pointer-events-none`} />
+      <div className={`absolute inset-0 pointer-events-none ${glassOverlayClass} z-20 pointer-events-none`} />
     </div>
   );
 };

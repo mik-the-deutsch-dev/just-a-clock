@@ -3,11 +3,11 @@ import { ClockStyle, ClockStyleId } from '../types';
 export const PREDEFINED_STYLES: ClockStyle[] = [
   {
     id: 'lcd-vintage',
-    name: 'Classic Gray LCD',
+    name: 'Classic Yellow LCD',
     activeColor: '#1a221f', // Dark gray liquid crystal
     inactiveColor: '#1a221f',
-    bgClass: 'from-emerald-950/20 via-slate-300 to-slate-400 text-slate-900 shadow-inner',
-    glassOverlayClass: 'bg-gradient-to-b from-white/20 via-transparent to-black/10 mix-blend-overlay',
+    bgClass: 'from-amber-900 via-amber-800 to-amber-700 text-slate-900 shadow-inner',
+    glassOverlayClass: 'bg-gradient-to-b from-amber-200 via-amber-300 to-amber-400 mix-blend-overlay',
     lcdShadow: true,
   },
   {

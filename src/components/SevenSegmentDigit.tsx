@@ -52,10 +52,10 @@ export const SevenSegmentDigit: React.FC<SevenSegmentDigitProps> = ({
 
   // Determine size classes
   const sizeClasses = {
-    sm: 'w-10 h-16 sm:w-12 sm:h-20',
-    md: 'w-16 h-28 sm:w-20 sm:h-36',
-    lg: 'w-24 h-40 sm:w-28 sm:h-48 md:w-32 md:h-56',
-    xl: 'w-28 h-48 sm:w-36 sm:h-60 md:w-44 md:h-72 lg:w-48 lg:h-80',
+    sm: 'w-[4vw] max-w-[20px] h-auto',
+    md: 'w-[7vw] max-w-[40px] h-auto',
+    lg: 'w-[9vw] max-w-[64px] h-auto',
+    xl: 'w-[10.5vw] max-w-[36px] xs:max-w-[48px] sm:max-w-[72px] md:max-w-[100px] lg:max-w-[124px] xl:max-w-[150px] 2xl:max-w-[180px] h-auto',
   }[size];
 
   // Italic skew look to mimic classic hardware slant
@@ -121,10 +121,10 @@ export const ColonSeparator: React.FC<ColonSeparatorProps> = ({
   className = '',
 }) => {
   const sizeClasses = {
-    sm: 'w-4 h-16 sm:w-6 sm:h-20',
-    md: 'w-6 h-28 sm:w-8 sm:h-36',
-    lg: 'w-8 h-40 sm:w-10 sm:h-48 md:w-12 md:h-56',
-    xl: 'w-10 h-48 sm:w-12 sm:h-60 md:w-14 md:h-72 lg:w-16 lg:h-80',
+    sm: 'w-[1.6vw] max-w-[8px] h-auto',
+    md: 'w-[2.8vw] max-w-[16px] h-auto',
+    lg: 'w-[3.6vw] max-w-[26px] h-auto',
+    xl: 'w-[4.2vw] max-w-[14px] xs:max-w-[20px] sm:max-w-[28px] md:max-w-[40px] lg:max-w-[50px] xl:max-w-[60px] 2xl:max-w-[72px] h-auto',
   }[size];
 
   const glowStyle: React.CSSProperties = {
