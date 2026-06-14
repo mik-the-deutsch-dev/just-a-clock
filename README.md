@@ -2,6 +2,15 @@
 <img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
 </div>
 
+# My first app with Google AI Studio and Github Copilot. A simple browser-based mobile & desktop friendly 7 segment clock, where one can optionally put their favorite clock picture as a background.
+
+## Overview
+- allows selecting predefined display colors
+- allows resizing and positioning of the clock display
+- is 7 segment :)
+- allows using either built-in or custom background image
+- stores settings in Browser Local storage
+
 # Run and deploy your AI Studio app
 
 This contains everything you need to run your app locally.
