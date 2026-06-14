@@ -11,6 +11,7 @@ interface SettingsScreenProps {
   isOpen: boolean;
   currentShift: { x: number; y: number };
   onAdjustPosition?: () => void;
+  onAdjustSize?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -20,6 +21,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   isOpen,
   currentShift,
   onAdjustPosition,
+  onAdjustSize,
 }) => {
   const [isWakeLockSupported, setIsWakeLockSupported] = useState(false);
 
@@ -324,8 +326,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               Adjust Clock Position on Screen
             </button>
 
-            <div className="text-xs text-zinc-500 text-center">
-              Current position: X {Math.round(settings.displayPositionX)}% / Y {Math.round(settings.displayPositionY)}%
+            <button
+              id="adjust-size-btn"
+              onClick={() => {
+                onAdjustSize?.();
+              }}
+              className="w-full p-4 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 border-2 border-sky-500/30 hover:border-sky-500/60 text-sky-300 hover:text-sky-200 font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <Monitor className="w-4 h-4" />
+              Adjust Clock Size on Screen
+            </button>
+
+            <div className="text-xs text-zinc-500 text-center space-y-1">
+              <div>Current width: {Math.round(settings.displayWidthPercent)}%</div>
+              <div>Current height: {Math.round(settings.displayHeightPercent)}%</div>
+              <div>Current font: {Math.round(settings.displayFontPercent)}%</div>
             </div>
           </div>
         </div>

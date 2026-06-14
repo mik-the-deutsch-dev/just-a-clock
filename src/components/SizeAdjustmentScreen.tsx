@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Check } from 'lucide-react';
+import { X, Monitor, Check } from 'lucide-react';
 import { ClockSettings, ClockStyle } from '../types';
 import { ClockFace, getClockBackgroundStyles } from './ClockFace';
 
-interface PositionAdjustmentScreenProps {
+interface SizeAdjustmentScreenProps {
   settings: ClockSettings;
   activeStyle: ClockStyle;
   onChange: (settings: ClockSettings) => void;
@@ -13,7 +13,7 @@ interface PositionAdjustmentScreenProps {
   currentShift: { x: number; y: number };
 }
 
-export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> = ({
+export const SizeAdjustmentScreen: React.FC<SizeAdjustmentScreenProps> = ({
   settings,
   activeStyle,
   onChange,
@@ -23,34 +23,48 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
 }) => {
   if (!isOpen) return null;
 
-  const handlePositionXChange = (value: number) => {
+  const handleWidthChange = (value: number) => {
     onChange({
       ...settings,
-      displayPositionX: value,
+      displayWidthPercent: value,
     });
   };
 
-  const handlePositionYChange = (value: number) => {
+  const handleHeightChange = (value: number) => {
     onChange({
       ...settings,
-      displayPositionY: value,
+      displayHeightPercent: value,
     });
   };
+
+  const handleFontChange = (value: number) => {
+    onChange({
+      ...settings,
+      displayFontPercent: value,
+    });
+  };
+
+  const CLOCK_DISPLAY_SCALE = 0.82;
 
   const calculatePosition = () => {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    
     const xOffset = (settings.displayPositionX - 50) * (screenWidth / 100) * 0.3;
     const invertedY = 100 - settings.displayPositionY;
     const yOffset = (invertedY - 50) * (screenHeight / 100) * 0.75;
-    
     return { x: xOffset, y: yOffset };
   };
 
-  const position = calculatePosition();
-  const CLOCK_DISPLAY_SCALE = 0.82;
-  const glassOverlayClass = activeStyle.id === 'lcd-vintage'
+  const positionOffset = calculatePosition();
+  const widthScale = Math.max(0.35, settings.displayWidthPercent / 100);
+  const heightScale = Math.max(0.35, settings.displayHeightPercent / 100);
+  const shiftX = (settings.burnInProtection ? currentShift.x : 0) + positionOffset.x;
+  const shiftY = (settings.burnInProtection ? currentShift.y : 0) + positionOffset.y;
+  const displayScaleX = CLOCK_DISPLAY_SCALE * widthScale;
+  const displayScaleY = CLOCK_DISPLAY_SCALE * heightScale;
+  const wrapperTransform = `translate(${shiftX.toFixed(2)}px, ${shiftY.toFixed(2)}px) scale(${displayScaleX}, ${displayScaleY})`;
+  const isClassicLcd = activeStyle.id === 'lcd-vintage';
+  const glassOverlayClass = isClassicLcd
     ? 'bg-gradient-to-b from-white/20 via-transparent to-black/10 mix-blend-overlay'
     : activeStyle.glassOverlayClass;
 
@@ -61,7 +75,6 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden select-none"
       style={getBackgroundStyles()}
     >
-      {/* Glass overlay effects */}
       {settings.backgroundId === 'vintage-glass' && (
         <>
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.12] z-20" />
@@ -69,7 +82,6 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
         </>
       )}
 
-      {/* Clock Display Preview */}
       <div
         id="adjustment-clock-display"
         className="relative w-[92%] sm:w-11/12 max-w-5xl flex flex-col items-center justify-center z-30 transition-transform duration-150 mx-auto"
@@ -77,14 +89,12 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
         <ClockFace
           settings={settings}
           activeStyle={activeStyle}
-          wrapperStyle={{ transform: `translate(${position.x}px, ${position.y}px) scale(${CLOCK_DISPLAY_SCALE})` }}
+          wrapperStyle={{ transform: wrapperTransform }}
         />
       </div>
 
-      {/* Glass overlay */}
       <div className={`absolute inset-0 pointer-events-none ${glassOverlayClass} z-20`} />
 
-      {/* Left Vertical Slider (Y Position) */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -92,21 +102,20 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
         transition={{ duration: 0.3, delay: 0.1 }}
         className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3"
       >
-        <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Y</div>
+        <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Vertical Size</div>
         <div className="flex items-center justify-center h-80 sm:h-96">
           <input
             type="range"
-            min="0"
-            max="100"
-            value={settings.displayPositionY}
-            onChange={(e) => handlePositionYChange(Number(e.target.value))}
+            min="20"
+            max="200"
+            value={settings.displayHeightPercent}
+            onChange={(e) => handleHeightChange(Number(e.target.value))}
             className="vertical-slider-input"
           />
         </div>
-        <div className="text-xs font-mono text-zinc-300 font-semibold">{Math.round(settings.displayPositionY)}%</div>
+        <div className="text-xs font-mono text-zinc-300 font-semibold">{Math.round(settings.displayHeightPercent)}%</div>
       </motion.div>
 
-      {/* Top Horizontal Slider (X Position) */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -114,21 +123,20 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
         transition={{ duration: 0.3, delay: 0.1 }}
         className="absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-3"
       >
-        <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">X Position</div>
+        <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Horizontal Size</div>
         <div className="w-64 sm:w-80 bg-zinc-900/80 border border-zinc-700 rounded-full px-3 py-2 flex items-center gap-3 backdrop-blur-sm">
           <input
             type="range"
-            min="0"
-            max="100"
-            value={settings.displayPositionX}
-            onChange={(e) => handlePositionXChange(Number(e.target.value))}
-            className="flex-1 h-2 appearance-none bg-zinc-800 rounded-full cursor-pointer slider accent-amber-500"
+            min="20"
+            max="200"
+            value={settings.displayWidthPercent}
+            onChange={(e) => handleWidthChange(Number(e.target.value))}
+            className="flex-1 h-2 appearance-none bg-zinc-800 rounded-full cursor-pointer slider accent-sky-400"
           />
         </div>
-        <div className="text-xs font-mono text-zinc-300 font-semibold">{Math.round(settings.displayPositionX)}%</div>
+        <div className="text-xs font-mono text-zinc-300 font-semibold">{Math.round(settings.displayWidthPercent)}%</div>
       </motion.div>
 
-      {/* Right Save Button */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -142,51 +150,66 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
         >
           <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
           <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 uppercase tracking-wider text-center">
-            Save<br />Position
+            Save Size
           </span>
         </button>
       </motion.div>
 
-      {/* Instruction text */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 text-center text-xs text-zinc-400 font-mono">
-        <div>Adjust sliders to reposition clock on screen</div>
-        <div className="text-zinc-500 text-[10px] mt-1">Position: X {Math.round(settings.displayPositionX)}% / Y {Math.round(settings.displayPositionY)}%</div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="absolute left-1/2 bottom-8 -translate-x-1/2 w-[calc(100%-10rem)] max-w-3xl flex flex-col items-center gap-3 z-40"
+      >
+        <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Font Size</div>
+        <div className="w-full bg-zinc-900/80 border border-zinc-700 rounded-full px-3 py-3 flex items-center gap-3 backdrop-blur-sm">
+          <input
+            type="range"
+            min="20"
+            max="200"
+            value={settings.displayFontPercent}
+            onChange={(e) => handleFontChange(Number(e.target.value))}
+            className="w-full h-2 appearance-none bg-zinc-800 rounded-full slider accent-sky-400"
+          />
+        </div>
+        <div className="text-[11px] text-zinc-300">{Math.round(settings.displayFontPercent)}%</div>
+      </motion.div>
 
-      <style>{`
-        /* Horizontal X slider styling */
+      <div className="absolute left-1/2 bottom-2 -translate-x-1/2 text-xs text-zinc-400 text-center z-40">
+        Preview uses the current clock style and background.
+      </div>
+  <style>{`
         .slider {
           appearance: none;
-          border-radius: 5px;
+          border-radius: 999px;
           outline: none;
         }
         .slider::-webkit-slider-thumb {
           appearance: none;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #38bdf8, #0ea5e9);
           cursor: pointer;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
-          border: 2px solid #92400e;
+          box-shadow: 0 0 12px rgba(56,189,248,0.35);
+          border: 2px solid rgba(56,189,248,0.45);
         }
         .slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #38bdf8, #0ea5e9);
           cursor: pointer;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
-          border: 2px solid #92400e;
+          box-shadow: 0 0 12px rgba(56,189,248,0.35);
+          border: 2px solid rgba(56,189,248,0.45);
         }
-
-        /* Vertical Y slider styling using standardized approach */
         .vertical-slider-input {
           writing-mode: vertical-lr;
           direction: rtl;
           width: 20px;
           height: 100%;
-          border-radius: 10px;
+          border-radius: 999px;
           outline: none;
           cursor: pointer;
         }
@@ -195,28 +218,28 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          background: linear-gradient(135deg, #38bdf8, #0ea5e9);
           cursor: pointer;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
-          border: 2px solid #92400e;
+          box-shadow: 0 0 12px rgba(56,189,248,0.35);
+          border: 2px solid rgba(56,189,248,0.45);
         }
         .vertical-slider-input::-moz-range-thumb {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #f59e0b, #d97706);
+          background: linear-gradient(135deg, #38bdf8, #0ea5e9);
           cursor: pointer;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
-          border: 2px solid #92400e;
+          box-shadow: 0 0 12px rgba(56,189,248,0.35);
+          border: 2px solid rgba(56,189,248,0.45);
         }
         .vertical-slider-input::-moz-range-track {
           background: transparent;
           border: none;
         }
         .vertical-slider-input::-webkit-slider-runnable-track {
-          background: linear-gradient(to bottom, #18181b 0%, #27272a 50%, #18181b 100%);
+          background: linear-gradient(to bottom, #111827 0%, #1f2937 50%, #111827 100%);
           height: 100%;
-          border-radius: 10px;
+          border-radius: 999px;
         }
       `}</style>
     </div>

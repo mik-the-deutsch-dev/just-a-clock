@@ -5,7 +5,6 @@ interface SevenSegmentDigitProps {
   char: string;
   style: ClockStyle;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const SEGMENT_PATHS = {
@@ -46,18 +45,11 @@ export const SevenSegmentDigit: React.FC<SevenSegmentDigitProps> = ({
   char,
   style,
   className = '',
-  size = 'md',
 }) => {
   const activeSegments = CHAR_MAP[char] || [];
 
-  // Determine size classes
-  const sizeClasses = {
-    sm: 'w-[4vw] max-w-[20px] h-auto',
-    md: 'w-[7vw] max-w-[40px] h-auto',
-    lg: 'w-[9vw] max-w-[64px] h-auto',
-    xl: 'w-[10.5vw] max-w-[36px] xs:max-w-[48px] sm:max-w-[72px] md:max-w-[100px] lg:max-w-[124px] xl:max-w-[150px] 2xl:max-w-[180px] h-auto',
-  }[size];
-
+  // Use a single responsive baseline size and let parent scale via transforms
+  const sizeClasses = 'w-[9vw] max-w-[100px] h-auto';
   // Italic skew look to mimic classic hardware slant
   const skewStyle: React.CSSProperties = {
     transform: 'skewX(-6deg)',
@@ -110,22 +102,16 @@ export const SevenSegmentDigit: React.FC<SevenSegmentDigitProps> = ({
 interface ColonSeparatorProps {
   style: ClockStyle;
   active: boolean;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
 export const ColonSeparator: React.FC<ColonSeparatorProps> = ({
   style,
   active,
-  size = 'md',
   className = '',
 }) => {
-  const sizeClasses = {
-    sm: 'w-[1.6vw] max-w-[8px] h-auto',
-    md: 'w-[2.8vw] max-w-[16px] h-auto',
-    lg: 'w-[3.6vw] max-w-[26px] h-auto',
-    xl: 'w-[4.2vw] max-w-[14px] xs:max-w-[20px] sm:max-w-[28px] md:max-w-[40px] lg:max-w-[50px] xl:max-w-[60px] 2xl:max-w-[72px] h-auto',
-  }[size];
+  // Single responsive baseline; parent controls final scale
+  const sizeClasses = 'w-[2.8vw] max-w-[40px] h-auto';
 
   const glowStyle: React.CSSProperties = {
     transform: 'skewX(-6deg)',
