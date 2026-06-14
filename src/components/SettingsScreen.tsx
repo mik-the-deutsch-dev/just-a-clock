@@ -10,6 +10,7 @@ interface SettingsScreenProps {
   onClose: () => void;
   isOpen: boolean;
   currentShift: { x: number; y: number };
+  onAdjustPosition?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -18,6 +19,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onClose,
   isOpen,
   currentShift,
+  onAdjustPosition,
 }) => {
   const [isWakeLockSupported, setIsWakeLockSupported] = useState(false);
 
@@ -301,6 +303,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Group 5: Position Adjustment */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 uppercase tracking-widest">
+              <Compass className="w-3.5 h-3.5 text-amber-500" />
+              <span>Display Position</span>
+            </div>
+
+            <button
+              id="adjust-position-btn"
+              onClick={() => {
+                onAdjustPosition?.();
+              }}
+              className="w-full p-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border-2 border-amber-500/30 hover:border-amber-500/60 text-amber-400 hover:text-amber-300 font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <Compass className="w-4 h-4 animate-[spin_8s_linear_infinite]" />
+              Adjust Clock Position on Screen
+            </button>
+
+            <div className="text-xs text-zinc-500 text-center">
+              Current position: X {Math.round(settings.displayPositionX)}% / Y {Math.round(settings.displayPositionY)}%
             </div>
           </div>
         </div>

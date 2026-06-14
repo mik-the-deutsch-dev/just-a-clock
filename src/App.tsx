@@ -5,6 +5,7 @@ import { ClockSettings, ClockStyle } from './types';
 import { PREDEFINED_STYLES } from './constants/clockStyles';
 import { ClockDisplay } from './components/ClockDisplay';
 import { SettingsScreen } from './components/SettingsScreen';
+import { PositionAdjustmentScreen } from './components/PositionAdjustmentScreen';
 
 const STORAGE_KEY = 'retro_segment_clock_settings';
 
@@ -17,6 +18,8 @@ const DEFAULT_SETTINGS: ClockSettings = {
   burnInProtection: true,
   burnInSpeed: 'medium',
   shiftIntensity: 4.5, // Shift range offset: 4.5 pixels
+  displayPositionX: 50, // Center by default
+  displayPositionY: 50, // Center by default
 };
 
 export default function App() {
@@ -36,6 +39,7 @@ export default function App() {
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPositionAdjustmentOpen, setIsPositionAdjustmentOpen] = useState(false);
   const [isSettingsBtnVisible, setIsSettingsBtnVisible] = useState(true);
   const [currentShift, setCurrentShift] = useState({ x: 0, y: 0 });
   const [showGuide, setShowGuide] = useState(true);
@@ -188,6 +192,27 @@ export default function App() {
               resetHideTimer();
             }}
             isOpen={isSettingsOpen}
+            currentShift={currentShift}
+            onAdjustPosition={() => {
+              setIsSettingsOpen(false);
+              setIsPositionAdjustmentOpen(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Position Adjustment Screen Modal overlay */}
+      <AnimatePresence>
+        {isPositionAdjustmentOpen && (
+          <PositionAdjustmentScreen
+            settings={settings}
+            activeStyle={activeStyle}
+            onChange={saveSettings}
+            onClose={() => {
+              setIsPositionAdjustmentOpen(false);
+              resetHideTimer();
+            }}
+            isOpen={isPositionAdjustmentOpen}
             currentShift={currentShift}
           />
         )}

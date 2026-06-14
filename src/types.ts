@@ -22,4 +22,6 @@ export interface ClockSettings {
   burnInProtection: boolean;
   burnInSpeed: 'slow' | 'medium' | 'fast'; // how often shift happens
   shiftIntensity: number; // custom shift pixel range e.g. 5px
+  displayPositionX: number; // 0-100 percentage
+  displayPositionY: number; // 0-100 percentage
 }

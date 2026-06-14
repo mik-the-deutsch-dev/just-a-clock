@@ -133,7 +133,20 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   // Developer-friendly clock sizing + position controls
   const CLOCK_DIGIT_SIZE: 'sm' | 'md' | 'lg' | 'xl' = 'sm';
   const CLOCK_DISPLAY_SCALE = 0.82;
-  const CLOCK_DISPLAY_POSITION = { x: 0, y: 0 };
+  
+  // Calculate position offset from settings (0-100% to pixels)
+  const calculatePositionOffset = () => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // Convert percentage to pixels, with larger range for more dramatic movement
+    const xOffset = (settings.displayPositionX - 50) * (screenWidth / 100) * 0.3;
+    const yOffset = (settings.displayPositionY - 50) * (screenHeight / 100) * 0.75;
+    
+    return { x: xOffset, y: yOffset };
+  };
+
+  const positionOffset = calculatePositionOffset();
 
   // Determine dynamic background styling
   const getBackgroundStyles = () => {
@@ -161,7 +174,6 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   };
 
   // Screen shift vector mapping for Burn-in Prevention + global scale + manual offset
-  const positionOffset = CLOCK_DISPLAY_POSITION;
   const shiftX = (settings.burnInProtection ? currentShift.x : 0) + positionOffset.x;
   const shiftY = (settings.burnInProtection ? currentShift.y : 0) + positionOffset.y;
   const wrapperTransform = `translate(${shiftX.toFixed(2)}px, ${shiftY.toFixed(2)}px) scale(${CLOCK_DISPLAY_SCALE})`;
