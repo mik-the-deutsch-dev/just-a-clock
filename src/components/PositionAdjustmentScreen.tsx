@@ -92,9 +92,10 @@ export const PositionAdjustmentScreen: React.FC<PositionAdjustmentScreenProps> =
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     
-    // Convert percentage to pixels, with larger range for Y to move from top to bottom
+    // Convert percentage to pixels, with larger range for Y to move from bottom to top (inverted)
     const xOffset = (settings.displayPositionX - 50) * (screenWidth / 100) * 0.3;
-    const yOffset = (settings.displayPositionY - 50) * (screenHeight / 100) * 0.75;
+    const invertedY = 100 - settings.displayPositionY;
+    const yOffset = (invertedY - 50) * (screenHeight / 100) * 0.75;
     
     return { x: xOffset, y: yOffset };
   };
