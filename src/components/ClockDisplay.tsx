@@ -92,7 +92,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   const displayScaleY = CLOCK_DISPLAY_SCALE * heightScale;
   const wrapperTransform = `translate(${shiftX.toFixed(2)}px, ${shiftY.toFixed(2)}px) scale(${displayScaleX}, ${displayScaleY})`;
 
-  const getBackgroundStyles = () => getClockBackgroundStyles(settings.backgroundId);
+  const getBackgroundStyles = () => getClockBackgroundStyles(settings.backgroundId, settings.customBackgroundDataUrl);
 
   const isClassicLcd = activeStyle.id === 'lcd-vintage';
   const glassOverlayClass = isClassicLcd

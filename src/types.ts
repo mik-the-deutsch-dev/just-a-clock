@@ -11,7 +11,7 @@ export interface ClockStyle {
   lcdShadow?: boolean;
 }
 
-export type ClockBgId = 'none' | 'vintage-glass' | 'brushed-metal' | 'carbon-fiber';
+export type ClockBgId = 'none' | 'vintage-glass' | 'brushed-metal' | 'carbon-fiber' | 'custom';
 
 export type BurnInSpeed = 'slow' | 'medium' | 'fast';
 
@@ -29,4 +29,5 @@ export interface ClockSettings {
   displayWidthPercent: number;
   displayHeightPercent: number;
   displayFontPercent: number;
+  customBackgroundDataUrl?: string;
 }

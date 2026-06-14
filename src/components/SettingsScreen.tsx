@@ -52,6 +52,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     });
   };
 
+  const handleCustomBackgroundFile = (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string | ArrayBuffer | null;
+      if (typeof result === 'string') {
+        onChange({
+          ...settings,
+          customBackgroundDataUrl: result,
+          backgroundId: 'custom',
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeCustomBackground = () => {
+    onChange({
+      ...settings,
+      customBackgroundDataUrl: undefined,
+      backgroundId: 'none',
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
       {/* Settings Dialog Card */}
@@ -144,6 +168,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 { id: 'none', label: 'Solid Black', desc: 'Saves power' },
                 { id: 'vintage-glass', label: 'Vintage Lens', desc: 'Old clock plate' },
                 { id: 'brushed-metal', label: 'Dark Metal', desc: 'Clean metallic' },
+                { id: 'custom', label: 'Custom', desc: 'Upload image' },
               ].map((bgOption) => {
                 const isSelected = settings.backgroundId === bgOption.id;
                 return (
@@ -162,6 +187,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   </button>
                 );
               })}
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+              <input
+                id="custom-bg-file"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleCustomBackgroundFile(e.target.files ? e.target.files[0] : null)}
+              />
+              <label htmlFor="custom-bg-file" className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm cursor-pointer">
+                Upload Custom Background
+              </label>
+              {settings.customBackgroundDataUrl && (
+                <>
+                  <div className="w-12 h-8 bg-cover bg-center rounded-md border" style={{ backgroundImage: `url(${settings.customBackgroundDataUrl})` }} />
+                  <button onClick={removeCustomBackground} className="text-xs text-amber-400 underline">Remove</button>
+                </>
+              )}
             </div>
           </div>
 

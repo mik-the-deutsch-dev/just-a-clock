@@ -10,7 +10,18 @@ interface ClockFaceProps {
   className?: string;
 }
 
-export const getClockBackgroundStyles = (backgroundId: ClockSettings['backgroundId']) => {
+export const getClockBackgroundStyles = (
+  backgroundId: ClockSettings['backgroundId'],
+  customDataUrl?: string
+) => {
+  if (backgroundId === 'custom' && customDataUrl) {
+    return {
+      backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.6)), url(${customDataUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    };
+  }
+
   switch (backgroundId) {
     case 'vintage-glass':
       return {

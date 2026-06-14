@@ -68,7 +68,7 @@ export const SizeAdjustmentScreen: React.FC<SizeAdjustmentScreenProps> = ({
     ? 'bg-gradient-to-b from-white/20 via-transparent to-black/10 mix-blend-overlay'
     : activeStyle.glassOverlayClass;
 
-  const getBackgroundStyles = () => getClockBackgroundStyles(settings.backgroundId);
+  const getBackgroundStyles = () => getClockBackgroundStyles(settings.backgroundId, settings.customBackgroundDataUrl);
 
   return (
     <div
