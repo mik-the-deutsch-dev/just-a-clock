@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   burnInSpeed: 'medium',
   shiftIntensity: 4.5,
   displayPositionX: 50,
-  displayPositionY: 50,
+  displayPositionY: 70,
   displayWidthPercent: 80,
   displayHeightPercent: 80,
   displayFontPercent: 80,
