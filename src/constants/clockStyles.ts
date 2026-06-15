@@ -1,4 +1,5 @@
 import { ClockStyle, ClockStyleId } from '../types';
+import vintageBg from '@/src/assets/images/retro_clock_bg_1781190983613.jpg';
 
 export const PREDEFINED_STYLES: ClockStyle[] = [
   {
@@ -52,5 +53,5 @@ export const PREDEFINED_STYLES: ClockStyle[] = [
   },
 ];
 
-export const VINTAGE_BG_IMAGE_PATH = '/src/assets/images/retro_clock_bg_1781190983613.jpg';
+export const VINTAGE_BG_IMAGE_PATH = vintageBg;
 export const FALLBACK_VINTAGE_BG_IMAGE = 'https://picsum.photos/seed/vintageclock/1920/1080?blur=1';
