@@ -12,12 +12,11 @@
 - allows resizing and positioning of the clock display
 - is 7 segment :)
 - allows using either built-in or custom background image
-- stores settings in Browser Local storage
+- stores settings in Browser Local storage. Up to 3 combinations.
 - is OLED-friendly (moves clock slighly every now and then to avoid pixel burn-out). For now only effective with dark background. Will be fixed in future
 
 
 ## Plans for future:
-- Save position and size settings and background - up to 3 combinations
 
 - Add LCD color for non-backlit LCDs
 

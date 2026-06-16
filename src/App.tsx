@@ -9,6 +9,8 @@ import { PositionAdjustmentScreen } from './components/PositionAdjustmentScreen'
 import { SizeAdjustmentScreen } from './components/SizeAdjustmentScreen';
 
 const STORAGE_KEY = 'retro_segment_clock_settings';
+const PRESETS_STORAGE_KEY = 'retro_segment_clock_presets';
+const MAX_PRESETS = 3;
 
 const DEFAULT_SETTINGS: ClockSettings = {
   styleId: 'led-red',
@@ -40,6 +42,21 @@ export default function App() {
     return DEFAULT_SETTINGS;
   });
 
+  const [presets, setPresets] = useState<ClockSettings[]>(() => {
+    try {
+      const saved = localStorage.getItem(PRESETS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse localStorage presets:', e);
+    }
+    return [];
+  });
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPositionAdjustmentOpen, setIsPositionAdjustmentOpen] = useState(false);
   const [isSizeAdjustmentOpen, setIsSizeAdjustmentOpen] = useState(false);
@@ -56,6 +73,25 @@ export default function App() {
     } catch (e) {
       console.warn('Could not save to localStorage:', e);
     }
+  };
+
+  const savePresets = (nextPresets: ClockSettings[]) => {
+    setPresets(nextPresets);
+    try {
+      localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(nextPresets));
+    } catch (e) {
+      console.warn('Could not save presets to localStorage:', e);
+    }
+  };
+
+  const handleSavePreset = () => {
+    const uniquePresets = presets.filter((preset) => JSON.stringify(preset) !== JSON.stringify(settings));
+    uniquePresets.push(settings);
+    savePresets(uniquePresets.slice(-MAX_PRESETS));
+  };
+
+  const handleLoadPreset = (preset: ClockSettings) => {
+    saveSettings(preset);
   };
 
   const resetHideTimer = () => {
@@ -175,6 +211,9 @@ export default function App() {
         {isSettingsOpen && (
           <SettingsScreen
             settings={settings}
+            presets={presets}
+            onSavePreset={handleSavePreset}
+            onLoadPreset={handleLoadPreset}
             onChange={saveSettings}
             onClose={() => {
               setIsSettingsOpen(false);
