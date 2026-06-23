@@ -115,14 +115,19 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
 
   // play beep when timer finished
   const BEEP_CONFIG = {
-    repeatCount: 3,
-    beepDurationMs: 600,
-    pauseBetweenBeepsMs: 300,
     frequencyHz: 880,
+
     fadeInMs: 10,
     fadeOutMs: 10,
+
     maxGain: 0.2,
     minGain: 0.0001,
+
+    pattern: [
+      { beepMs: 600, pauseMs: 100 },
+      { beepMs: 600, pauseMs: 100 },
+      { beepMs: 600, pauseMs: 10 },
+    ],
   };
 
   useEffect(() => {
@@ -133,12 +138,18 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
     const sleep = (ms: number) =>
       new Promise(resolve => setTimeout(resolve, ms));
 
-    const playBeepSequence = async () => {
+    const playPattern = async () => {
       try {
-        const ctx = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
+        const ctx = new (
+          window.AudioContext ||
+          (window as any).webkitAudioContext
+        )();
 
-        for (let i = 0; i < BEEP_CONFIG.repeatCount; i++) {
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+
+        for (const step of BEEP_CONFIG.pattern) {
           if (cancelled) {
             break;
           }
@@ -150,67 +161,64 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
           gain.connect(ctx.destination);
 
           oscillator.type = 'sine';
-          oscillator.frequency.value = BEEP_CONFIG.frequencyHz;
+          oscillator.frequency.value =
+            BEEP_CONFIG.frequencyHz;
 
-          const startTime = ctx.currentTime;
+          const now = ctx.currentTime;
 
           gain.gain.setValueAtTime(
             BEEP_CONFIG.minGain,
-            startTime
+            now
           );
 
           gain.gain.exponentialRampToValueAtTime(
             BEEP_CONFIG.maxGain,
-            startTime + BEEP_CONFIG.fadeInMs / 1000
+            now + BEEP_CONFIG.fadeInMs / 1000
           );
+
+          const fadeOutStart =
+            Math.max(
+              step.beepMs - BEEP_CONFIG.fadeOutMs,
+              BEEP_CONFIG.fadeInMs
+            ) / 1000;
 
           gain.gain.setValueAtTime(
             BEEP_CONFIG.maxGain,
-            startTime +
-            (BEEP_CONFIG.beepDurationMs -
-              BEEP_CONFIG.fadeOutMs) /
-            1000
+            now + fadeOutStart
           );
 
           gain.gain.exponentialRampToValueAtTime(
             BEEP_CONFIG.minGain,
-            startTime +
-            BEEP_CONFIG.beepDurationMs / 1000
+            now + step.beepMs / 1000
           );
 
-          oscillator.start(startTime);
+          oscillator.start(now);
 
           oscillator.stop(
-            startTime +
-            BEEP_CONFIG.beepDurationMs / 1000
+            now + step.beepMs / 1000
           );
 
-          await sleep(BEEP_CONFIG.beepDurationMs);
+          await sleep(step.beepMs);
 
           oscillator.disconnect();
           gain.disconnect();
 
-          if (
-            i < BEEP_CONFIG.repeatCount - 1 &&
-            !cancelled
-          ) {
-            await sleep(BEEP_CONFIG.pauseBetweenBeepsMs);
+          if (cancelled) {
+            break;
+          }
+
+          if (step.pauseMs > 0) {
+            await sleep(step.pauseMs);
           }
         }
 
         await ctx.close();
       } catch (e) {
-        try {
-          const a = new Audio();
-          a.src = '';
-          a.play().catch(() => { });
-        } catch {
-          // ignore
-        }
+        console.error(e);
       }
     };
 
-    playBeepSequence();
+    playPattern();
 
     return () => {
       cancelled = true;
