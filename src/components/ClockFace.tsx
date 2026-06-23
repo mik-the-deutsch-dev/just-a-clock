@@ -8,6 +8,8 @@ interface ClockFaceProps {
   activeStyle: ClockStyle;
   wrapperStyle?: React.CSSProperties;
   className?: string;
+  timerSeconds?: number | null;
+  blink?: boolean;
 }
 
 export const getClockBackgroundStyles = (
@@ -80,7 +82,27 @@ const getClockDigits = (time: Date, use24Hour: boolean) => {
 // Allow font scaling from 20% up to 200% (0.2 - 2.0)
 const getFontScale = (settings: ClockSettings) => Math.min(2.0, Math.max(0.2, settings.displayFontPercent / 100));
 
-export const ClockFace: React.FC<ClockFaceProps> = ({ settings, activeStyle, wrapperStyle, className }) => {
+const getTimerDigits = (seconds: number) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const hStr = hrs < 10 ? '0' + hrs : String(hrs);
+  const mStr = mins < 10 ? '0' + mins : String(mins);
+  const sStr = secs < 10 ? '0' + secs : String(secs);
+
+  return {
+    h1: hStr[0],
+    h2: hStr[1],
+    m1: mStr[0],
+    m2: mStr[1],
+    s1: sStr[0],
+    s2: sStr[1],
+    isPm: false,
+  };
+};
+
+export const ClockFace: React.FC<ClockFaceProps> = ({ settings, activeStyle, wrapperStyle, className, timerSeconds, blink }) => {
   const [time, setTime] = useState(new Date());
   const [isColonActive, setIsColonActive] = useState(true);
 
@@ -94,20 +116,24 @@ export const ClockFace: React.FC<ClockFaceProps> = ({ settings, activeStyle, wra
     return () => clearInterval(interval);
   }, []);
 
-  const digits = getClockDigits(time, settings.use24Hour);
+  const isTimerMode = typeof timerSeconds === 'number' && timerSeconds !== null;
+  const digits = typeof timerSeconds === 'number' && timerSeconds !== null
+    ? getTimerDigits(Math.max(0, timerSeconds))
+    : getClockDigits(time, settings.use24Hour);
   const isClassicLcd = activeStyle.id === 'lcd-vintage';
   const clockDigitWrapperClass = isClassicLcd
     ? 'from-amber-900 via-amber-800 to-amber-700 text-slate-900'
     : activeStyle.bgClass;
 
   const digitScaleStyle = { transform: `scale(${getFontScale(settings)})` };
+  const blinkClass = blink ? 'animate-blink' : '';
 
   return (
     <div className={`relative flex items-center justify-center ${className ?? ''}`} style={wrapperStyle}>
       <div
         className={`w-full flex items-center justify-center gap-1.5 sm:gap-2 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl transition-all duration-550 border-2 border-zinc-950/20 bg-gradient-to-b ${clockDigitWrapperClass}`}
       >
-        <div className="relative flex items-center justify-center gap-1 sm:gap-2" style={digitScaleStyle}>
+        <div className={`w-full flex items-center justify-center relative flex items-center justify-center gap-1 sm:gap-2 ${blinkClass}`} style={digitScaleStyle} >
           <SevenSegmentDigit char={digits.h1} style={activeStyle} />
           <SevenSegmentDigit char={digits.h2} style={activeStyle} />
           <ColonSeparator style={activeStyle} active={isColonActive} />
@@ -120,7 +146,7 @@ export const ClockFace: React.FC<ClockFaceProps> = ({ settings, activeStyle, wra
               <SevenSegmentDigit char={digits.s2} style={activeStyle} />
             </>
           )}
-          {!settings.use24Hour && (
+          {!settings.use24Hour && !isTimerMode && (
             <div
               id="ampm-indicator-box"
               className="absolute right-[-2.5rem] bottom-[15%] sm:right-[-3rem] flex flex-col gap-2 font-mono font-bold text-[8px] sm:text-[10px] tracking-tighter"
@@ -144,3 +170,8 @@ export const ClockFace: React.FC<ClockFaceProps> = ({ settings, activeStyle, wra
     </div>
   );
 };
+
+// add blink animation style globally for this component
+const style = document.createElement('style');
+style.innerHTML = `@keyframes blinkFade { from { opacity: 1 } to { opacity: 0.08 } } .animate-blink { animation: blinkFade 0.6s ease-in-out infinite alternate; }`;
+document.head.appendChild(style);

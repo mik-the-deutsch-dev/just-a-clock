@@ -7,12 +7,26 @@ interface ClockDisplayProps {
   settings: ClockSettings;
   activeStyle: ClockStyle;
   currentShift: { x: number; y: number };
+  mode?: 'clock' | 'timer';
+  timerSeconds?: number | null;
+  timerRunning?: boolean;
+  timerFinished?: boolean;
+  onSetTimer?: (seconds: number) => void;
+  onToggleStartPause?: () => void;
+  isControlsVisible?: boolean;
 }
 
 export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   settings,
   activeStyle,
   currentShift,
+  mode = 'clock',
+  timerSeconds = null,
+  timerRunning = false,
+  timerFinished = false,
+  onSetTimer,
+  onToggleStartPause,
+  isControlsVisible = true,
 }) => {
   const [wakeLockActive, setWakeLockActive] = useState(false);
   const wakeLockRef = useRef<any>(null);
@@ -99,6 +113,34 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
     ? 'bg-gradient-to-b from-white/20 via-transparent to-black/10 mix-blend-overlay'
     : activeStyle.glassOverlayClass;
 
+  // play beep when timer finished
+  useEffect(() => {
+    if (!timerFinished) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+      o.start();
+      setTimeout(() => {
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01);
+        o.stop(ctx.currentTime + 0.02);
+        try { ctx.close(); } catch (e) {}
+      }, 600);
+    } catch (e) {
+      try {
+        const a = new Audio();
+        a.src = '';
+        a.play().catch(() => {});
+      } catch (err) {}
+    }
+  }, [timerFinished]);
+
   return (
     <div
       id="clock-stage"
@@ -126,11 +168,41 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
         </span>
       </div>
 
+      {mode === 'timer' && isControlsVisible && (
+        <div className="absolute left-6 bottom-8 z-30 flex flex-col items-center gap-3">
+          <button
+            onClick={() => {
+              const input = window.prompt('Enter timer duration as HH:MM:SS (e.g. 00:05:30)');
+              if (!input) return;
+              const parts = input.split(':').map((p) => Number(p));
+              if (parts.length !== 3 || parts.some((n) => Number.isNaN(n) || n < 0)) {
+                alert('Invalid format. Use HH:MM:SS');
+                return;
+              }
+              const seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+              onSetTimer && onSetTimer(seconds);
+            }}
+            className="px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm text-zinc-200 hover:bg-zinc-800 transition"
+          >
+            Set
+          </button>
+
+          <button
+            onClick={() => onToggleStartPause && onToggleStartPause()}
+            className="px-4 py-2 bg-amber-500/10 border border-amber-500 rounded-lg text-sm text-amber-300 hover:bg-amber-500/20 transition"
+          >
+            {timerRunning ? 'Pause' : timerSeconds && timerSeconds > 0 ? 'Start' : 'Start'}
+          </button>
+        </div>
+      )}
+
       <div className="relative w-full h-full flex items-center justify-center">
         <ClockFace
           settings={settings}
           activeStyle={activeStyle}
           wrapperStyle={{ transform: wrapperTransform }}
+          timerSeconds={mode === 'timer' ? timerSeconds ?? null : undefined}
+          blink={!!timerFinished}
         />
       </div>
 

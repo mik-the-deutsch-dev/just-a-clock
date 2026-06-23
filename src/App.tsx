@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Settings, Info } from 'lucide-react';
+import { Settings, Info, Clock } from 'lucide-react';
 import { ClockSettings } from './types';
 import { PREDEFINED_STYLES } from './constants/clockStyles';
 import { ClockDisplay } from './components/ClockDisplay';
@@ -61,6 +61,7 @@ export default function App() {
   const [isPositionAdjustmentOpen, setIsPositionAdjustmentOpen] = useState(false);
   const [isSizeAdjustmentOpen, setIsSizeAdjustmentOpen] = useState(false);
   const [isSettingsBtnVisible, setIsSettingsBtnVisible] = useState(true);
+  const [isControlsVisible, setIsControlsVisible] = useState(true);
   const [currentShift, setCurrentShift] = useState({ x: 0, y: 0 });
   const [showGuide, setShowGuide] = useState(true);
 
@@ -73,6 +74,47 @@ export default function App() {
     } catch (e) {
       console.warn('Could not save to localStorage:', e);
     }
+  };
+
+  // Timer state
+  const [mode, setMode] = useState<'clock' | 'timer'>('clock');
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+  const [timerInitialSeconds, setTimerInitialSeconds] = useState<number | null>(null);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerFinished, setTimerFinished] = useState(false);
+
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => {
+      setTimerSeconds((prev) => {
+        if (prev === null) return null;
+        if (prev <= 1) {
+          setTimerRunning(false);
+          setTimerFinished(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
+
+  const setTimerDuration = (seconds: number) => {
+    setTimerSeconds(seconds);
+    setTimerInitialSeconds(seconds);
+    setTimerFinished(false);
+    setTimerRunning(false);
+  };
+
+  const toggleStartPauseTimer = () => {
+    if (timerSeconds === null) return;
+    if (timerFinished && timerInitialSeconds) {
+      setTimerSeconds(timerInitialSeconds);
+      setTimerFinished(false);
+      setTimerRunning(true);
+      return;
+    }
+    setTimerRunning((s) => !s);
   };
 
   const savePresets = (nextPresets: ClockSettings[]) => {
@@ -96,6 +138,7 @@ export default function App() {
 
   const resetHideTimer = () => {
     setIsSettingsBtnVisible(true);
+    setIsControlsVisible(true);
 
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
@@ -161,6 +204,13 @@ export default function App() {
         settings={settings}
         activeStyle={activeStyle}
         currentShift={currentShift}
+        mode={mode}
+        timerSeconds={timerSeconds}
+        timerRunning={timerRunning}
+        timerFinished={timerFinished}
+        onSetTimer={setTimerDuration}
+        onToggleStartPause={toggleStartPauseTimer}
+        isControlsVisible={isControlsVisible}
       />
 
       <AnimatePresence>
@@ -202,6 +252,32 @@ export default function App() {
               title="Open Clock Settings"
             >
               <Settings className="w-5 h-5 animate-[spin_25s_linear_infinite]" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom-right toggle: Clock <-> Timer */}
+      <AnimatePresence>
+        {isControlsVisible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="absolute bottom-6 right-6 z-40"
+          >
+            <button
+              id="mode-toggle-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMode((m) => (m === 'clock' ? 'timer' : 'clock'));
+                resetHideTimer();
+              }}
+              className="p-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-full shadow-lg transition-all active:scale-95 duration-100 cursor-pointer backdrop-blur-sm"
+              title="Switch Clock/Timer"
+            >
+              <Clock className="w-5 h-5" />
             </button>
           </motion.div>
         )}
