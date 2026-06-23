@@ -14,6 +14,7 @@
 - allows using either built-in or custom background image
 - stores settings in Browser Local storage. Up to 3 combinations.
 - is OLED-friendly (moves clock slighly every now and then to avoid pixel burn-out). For now only effective with dark background. Will be fixed in future
+- has timer (needs UI improvement)
 
 
 ## Plans for future:
@@ -24,8 +25,6 @@
 
 - Add alarm
 
-- Add timer
-
 - Add sounds (transformer wroom)?
 
 - BUG: position adjustment does not use real clock size
@@ -33,6 +32,8 @@
 - BUG: move background and screen lock text for OLED
 
 - Add AI feature - user uploads a picture of a clock face, AI determines position and size (possibly color) of display and applies automatically
+
+- Add selectable/custom(?) beep patterns
 
 
 # Run and deploy
