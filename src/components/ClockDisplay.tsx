@@ -81,7 +81,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
       if (wakeLockRef.current) {
         try {
           wakeLockRef.current.release();
-        } catch (e) {}
+        } catch (e) { }
       }
     };
   }, [settings.keepAlwaysOn]);
@@ -114,31 +114,107 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
     : activeStyle.glassOverlayClass;
 
   // play beep when timer finished
+  const BEEP_CONFIG = {
+    repeatCount: 3,
+    beepDurationMs: 600,
+    pauseBetweenBeepsMs: 300,
+    frequencyHz: 880,
+    fadeInMs: 10,
+    fadeOutMs: 10,
+    maxGain: 0.2,
+    minGain: 0.0001,
+  };
+
   useEffect(() => {
     if (!timerFinished) return;
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.type = 'sine';
-      o.frequency.value = 880;
-      g.gain.setValueAtTime(0.0001, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.01);
-      o.start();
-      setTimeout(() => {
-        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01);
-        o.stop(ctx.currentTime + 0.02);
-        try { ctx.close(); } catch (e) {}
-      }, 600);
-    } catch (e) {
+
+    let cancelled = false;
+
+    const sleep = (ms: number) =>
+      new Promise(resolve => setTimeout(resolve, ms));
+
+    const playBeepSequence = async () => {
       try {
-        const a = new Audio();
-        a.src = '';
-        a.play().catch(() => {});
-      } catch (err) {}
-    }
+        const ctx = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+
+        for (let i = 0; i < BEEP_CONFIG.repeatCount; i++) {
+          if (cancelled) {
+            break;
+          }
+
+          const oscillator = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          oscillator.connect(gain);
+          gain.connect(ctx.destination);
+
+          oscillator.type = 'sine';
+          oscillator.frequency.value = BEEP_CONFIG.frequencyHz;
+
+          const startTime = ctx.currentTime;
+
+          gain.gain.setValueAtTime(
+            BEEP_CONFIG.minGain,
+            startTime
+          );
+
+          gain.gain.exponentialRampToValueAtTime(
+            BEEP_CONFIG.maxGain,
+            startTime + BEEP_CONFIG.fadeInMs / 1000
+          );
+
+          gain.gain.setValueAtTime(
+            BEEP_CONFIG.maxGain,
+            startTime +
+            (BEEP_CONFIG.beepDurationMs -
+              BEEP_CONFIG.fadeOutMs) /
+            1000
+          );
+
+          gain.gain.exponentialRampToValueAtTime(
+            BEEP_CONFIG.minGain,
+            startTime +
+            BEEP_CONFIG.beepDurationMs / 1000
+          );
+
+          oscillator.start(startTime);
+
+          oscillator.stop(
+            startTime +
+            BEEP_CONFIG.beepDurationMs / 1000
+          );
+
+          await sleep(BEEP_CONFIG.beepDurationMs);
+
+          oscillator.disconnect();
+          gain.disconnect();
+
+          if (
+            i < BEEP_CONFIG.repeatCount - 1 &&
+            !cancelled
+          ) {
+            await sleep(BEEP_CONFIG.pauseBetweenBeepsMs);
+          }
+        }
+
+        await ctx.close();
+      } catch (e) {
+        try {
+          const a = new Audio();
+          a.src = '';
+          a.play().catch(() => { });
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    playBeepSequence();
+
+    return () => {
+      cancelled = true;
+    };
   }, [timerFinished]);
 
   return (
